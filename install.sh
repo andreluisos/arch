@@ -79,6 +79,7 @@ packagekit \
 grub \
 efibootmgr \
 lvm2 \
+parted \
 iptables \
 ebtables \
 bash-completion \
