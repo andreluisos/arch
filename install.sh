@@ -84,11 +84,11 @@ iptables \
 ebtables \
 bash-completion \
 curl wget git \
-podman rclone \
+podman rclone ffmpeg \
 --noconfirm
 if [[ "$pschose" == "server" ]]
 then
-  pacstrap /mnt python3 python-pip ffmpeg \
+  pacstrap /mnt python3 python-pip moreutils jq \
   unrar unzip \
   --noconfirm
   arch-chroot /mnt pip install wheel
