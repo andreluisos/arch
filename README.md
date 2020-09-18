@@ -1,7 +1,5 @@
 # Installation
 
-## Arch Linux
-
 - ```passwd root```
 - ```systemctl start sshd```
 - ```ssh into installer as root```
