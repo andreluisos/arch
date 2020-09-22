@@ -185,13 +185,18 @@ arch-chroot /mnt mkinitcpio -p $kernel
 echo -e "${color_green}Done mkinitcpio.${color_reset}"
 
 echo -e "${color_yellow}Creating a new user...${color_reset}"
-arch-chroot /mnt useradd -m -c "${fullname}" "${username}"
+arch-chroot /mnt useradd -mG wheel "${username}" -c "${fullname}"
 echo -e "${color_blue}Type in the password for the username...${color_reset}"
 arch-chroot /mnt passwd "${username}"
 echo -e "${color_blue}Type in the password for the root...${color_reset}"
 arch-chroot /mnt passwd root
 echo -e "${color_green}Done creating a new user.${color_reset}"
-
+if [[ "$pschose" == "server" ]]
+then
+  echo -e "${color_yellow}Allowing wheel group to use sudo...${color_reset}"
+  sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/g' /mnt/etc/sudoers
+  echo -e "${color_green}Done allowing wheel group to use sudo.${color_reset}"
+fi
 echo -e "${color_yellow}Setting up services...${color_reset}"
 if [[ "$pschose" == "server" ]]
 then
