@@ -85,10 +85,11 @@ ebtables \
 bash-completion \
 curl wget git \
 podman rclone ffmpeg \
+moreutils jq \
 --noconfirm
 if [[ "$pschose" == "server" ]]
 then
-  pacstrap /mnt python3 python-pip moreutils jq \
+  pacstrap /mnt python3 python-pip \
   unrar unzip \
   --noconfirm
   arch-chroot /mnt pip install wheel
