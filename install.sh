@@ -223,6 +223,7 @@ fi
 echo -e "${color_green}Done setting up services.${color_reset}"
 
 echo -e "${color_yellow}Setting up GRUB...${color_reset}"
+sleep 30
 sed -i 's/GRUB_TIMEOUT=5/GRUB_TIMEOUT=0/g' /mnt/etc/default/grub
 arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/efi --bootloader-id=$host
 arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
