@@ -31,7 +31,6 @@ echo -e "${color_yellow}Creating partitions and formating them...${color_reset}"
 vgremove -q -f -y $(vgdisplay | grep "VG Name" | awk '{print $3}')
 pvremove -q -f -y $(pvdisplay | grep "PV Name" | awk '{print $3}')
 wipefs --all --force "${storage_device}"
-sleep 30
 parted -s -a optimal --script "${storage_device}" \
     mklabel gpt \
     mkpart ESP fat32 2M 514M \
@@ -86,11 +85,10 @@ ebtables \
 bash-completion \
 curl wget git \
 podman rclone ffmpeg \
-moreutils jq \
 --noconfirm
 if [[ "$pschose" == "server" ]]
 then
-  pacstrap /mnt python3 python-pip \
+  pacstrap /mnt python3 python-pip moreutils jq \
   unrar unzip \
   --noconfirm
   arch-chroot /mnt pip install wheel
@@ -223,9 +221,24 @@ then
 fi
 echo -e "${color_green}Done setting up services.${color_reset}"
 
+
+cat > /mnt/install.sh << EOF
+#!/bin/bash
+
+# Color preset variables
+color_reset='\033[0m'
+color_red='\033[1;31m'
+color_green='\033[1;32m'
+color_yellow='\033[1;33m'
+color_blue='\033[1;34m'
+
 echo -e "${color_yellow}Setting up GRUB...${color_reset}"
-sleep 30
-sed -i 's/GRUB_TIMEOUT=5/GRUB_TIMEOUT=0/g' /mnt/etc/default/grub
-arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/efi --bootloader-id=$host
-arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
+sed -i 's/GRUB_TIMEOUT=5/GRUB_TIMEOUT=0/g' /etc/default/grub
+grub-install --target=x86_64-efi --efi-directory=/efi --bootloader-id=$host
+grub-mkconfig -o /boot/grub/grub.cfg
 echo -e "${color_green}Done setting up GRUB.${color_reset}"
+rm $0
+EOF
+chmod +x /mnt/install.sh
+rm $0
+echo -e "${color_red}Remove usb before proceeding...${color_reset}"
