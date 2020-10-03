@@ -198,12 +198,9 @@ then
   echo -e "${color_green}Done allowing wheel group to use sudo.${color_reset}"
 fi
 echo -e "${color_yellow}Setting up services...${color_reset}"
-if [[ "$pschose" == "server" ]]
-then
-  touch /mnt/etc/{subgid,subuid,sysctl.conf}
-  echo "kernel.unprivileged_userns_clone=1" >> /mnt/etc/sysctl.conf
-  arch-chroot /mnt usermod --add-subuids 100000-165535 --add-subgids 100000-165535 $username
-fi
+touch /mnt/etc/{subgid,subuid,sysctl.conf}
+echo "kernel.unprivileged_userns_clone=1" >> /mnt/etc/sysctl.conf
+arch-chroot /mnt usermod --add-subuids 100000-165535 --add-subgids 100000-165535 $username
 sed -i 's/#user_allow_other/user_allow_other/g' /mnt/etc/fuse.conf
 arch-chroot /mnt systemctl enable NetworkManager numlock podman sshd
 if [[ "$pschose" == "personal" ]]
