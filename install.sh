@@ -29,7 +29,7 @@ read -p "$(echo -e "${color_blue}Enter storage device: ${color_reset}")" storage
 
 echo -e "${color_yellow}Creating partitions and formating them...${color_reset}"
 vgremove -q -f -y $(vgdisplay | grep "VG Name" | awk '{print $3}')
-pvremove -q --force --force -y $(pvdisplay | grep "PV Name" | awk '{print $3}')
+pvremove -q -f -y $(pvdisplay | grep "PV Name" | awk '{print $3}')
 wipefs --all --force "${storage_device}"
 sleep 30
 parted -s -a optimal --script "${storage_device}" \
