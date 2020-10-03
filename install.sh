@@ -31,6 +31,9 @@ echo -e "${color_yellow}Creating partitions and formating them...${color_reset}"
 vgremove -q -f -y $(vgdisplay | grep "VG Name" | awk '{print $3}')
 pvremove -q -f -y $(pvdisplay | grep "PV Name" | awk '{print $3}')
 wipefs --all --force "${storage_device}"
+vgremove -q -f -y $(vgdisplay | grep "VG Name" | awk '{print $3}')
+pvremove -q -f -y $(pvdisplay | grep "PV Name" | awk '{print $3}')
+wipefs --all --force "${storage_device}"
 parted -s -a optimal --script "${storage_device}" \
     mklabel gpt \
     mkpart ESP fat32 2M 514M \
