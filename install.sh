@@ -115,6 +115,7 @@ then
     bridge-utils \
     gnome \
     gdm \
+    gnome-software-packagekit-plugin \
     chromium \
     gnome-tweak-tool \
     gnome-usage \
