@@ -85,6 +85,7 @@ ebtables \
 bash-completion \
 curl wget git \
 podman rclone ffmpeg \
+pacman-contrib \
 --noconfirm
 if [[ "$pschose" == "server" ]]
 then
