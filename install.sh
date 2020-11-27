@@ -198,6 +198,8 @@ then
   echo -e "${color_yellow}Allowing wheel group to use sudo...${color_reset}"
   sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/g' /mnt/etc/sudoers
   echo -e "${color_green}Done allowing wheel group to use sudo.${color_reset}"
+  sed -i 's/#KillUserProcesses=no/KillUserProcesses=no/g' /mnt/etc/systemd/logind.conf
+  arch-chroot /mnt loginctl enable-linger "${username}"
 fi
 echo -e "${color_yellow}Setting up services...${color_reset}"
 touch /mnt/etc/{subgid,subuid,sysctl.conf}
