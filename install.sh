@@ -235,7 +235,7 @@ color_blue='\033[1;34m'
 
 echo -e "${color_yellow}Setting up GRUB...${color_reset}"
 sed -i 's/GRUB_TIMEOUT=5/GRUB_TIMEOUT=0/g' /etc/default/grub
-grub-install --target=x86_64-efi --efi-directory=/efi --bootloader-id=$host
+grub-install --target=x86_64-efi --efi-directory=/efi --bootloader-id=$host --removable
 grub-mkconfig -o /boot/grub/grub.cfg
 echo -e "${color_green}Done setting up GRUB.${color_reset}"
 rm $0
