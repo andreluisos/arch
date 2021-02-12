@@ -115,7 +115,6 @@ then
     virt-viewer \
     bridge-utils \
     gnome \
-    gdm \
     gnome-software-packagekit-plugin \
     chromium \
     gnome-tweak-tool \
@@ -210,7 +209,7 @@ arch-chroot /mnt systemctl enable NetworkManager numlock podman sshd
 if [[ "$pschose" == "personal" ]]
 then
   arch-chroot /mnt set-default graphical.target
-  arch-chroot /mnt systemctl enable org.cups.cupsd gdm libvirtd fstrim.timer
+  arch-chroot /mnt systemctl enable cups gdm libvirtd fstrim.timer
   rm /mnt/usr/share/applications/system-config-printer.desktop \
         /mnt/usr/share/applications/bvnc.desktop \
         /mnt/usr/share/applications/cups.desktop \
