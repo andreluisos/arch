@@ -38,25 +38,27 @@ parted -s -a optimal --script "${storage_device}" \
     set 1 esp on \
     name 1 efi \
     mkpart primary 514M 100% \
-    set 2 lvm on \
     quit
 parted --script "${storage_device}" print
 storage_device_partition_efi="$(ls ${storage_device}* | grep -E "^${storage_device}p?1$")"
 storage_device_partition_root="$(ls ${storage_device}* | grep -E "^${storage_device}p?2$")"
-pvcreate -y "${storage_device_partition_root}"
-vgcreate -y $host "${storage_device_partition_root}"
-lvcreate -y -l 100%FREE $host -n root
-modprobe dm_mod
-vgscan
-vgchange -ay
 yes | mkfs.fat -F32 "${storage_device_partition_efi}"
-yes | mkfs.btrfs -L root /dev/$host/root
+yes | mkfs.btrfs "${storage_device_partition_root}"
 echo -e "${color_green}Done creating partitions and formating them.${color_reset}"
 
 echo -e "${color_yellow}Creating mountpoints and mounting partitions...${color_reset}"
-mount /dev/$host/root /mnt
-mkdir /mnt/efi
-mount $storage_device_partition_efi /mnt/efi
+mount "${storage_device_partition_root}" /mnt
+btrfs subvolume create /mnt/@
+btrfs subvolume create /mnt/@home
+btrfs subvolume create /mnt/@var
+btrfs subvolume create /mnt/@snapshots
+umount /mnt
+mount -o noatime,compress=lzo,space_cache,subvol=@ "${storage_device_partition_root}" /mnt
+mkdir -p /mnt/{boot/efi,home,var,.snapshots}
+mount -o noatime,compress=lzo,space_cache,subvol=@home "${storage_device_partition_root}" $ /mnt/home
+mount -o noatime,compress=lzo,space_cache,subvol=@var "${storage_device_partition_root}" /mnt/var
+mount -o noatime,compress=lzo,space_cache,subvol=@snapshots "${storage_device_partition_root}" /mnt/.snapshots
+mount "${storage_device_partition_efi}" /mnt/boot/efi
 echo -e "${color_green}Done creating mountpoints and mounting partitions.${color_reset}"
 
 echo -e "${color_yellow}Setting up mirrors...${color_reset}"
@@ -71,6 +73,7 @@ core_packages=(
     ${kernel}
     ${kernel}-headers
     linux-firmware
+    snapper
     util-linux
     intel-ucode
     btrfs-progs
@@ -181,11 +184,10 @@ echo -e "${color_green}Done generating fstab.${color_reset}"
 echo -e "${color_yellow}Setting up region and language...${color_reset}"
 arch-chroot /mnt ln -sf /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime
 arch-chroot /mnt hwclock --systohc
-echo "en_US.UTF-8 UTF-8" >> /mnt/etc/locale.gen
-echo "pt_BR.UTF-8 UTF-8" >> /mnt/etc/locale.gen
+sed -i 's/#pt_BR.UTF-8 UTF-8/pt_BR.UTF-8 UTF-8/g' /mnt/etc/locale.gen
+echo "LANG=pt_BR.UTF-8" > /mnt/etc/locale.conf
+echo "KEYMAP=br-abnt2" > /mnt/etc/vconsole.conf
 arch-chroot /mnt locale-gen
-echo "LANG=en_US.UTF-8" >> /mnt/etc/locale.conf
-echo "KEYMAP=br-abnt2" >> /mnt/etc/vconsole.conf
 arch-chroot /mnt timedatectl set-ntp true
 echo -e "${color_green}Done setting up region and language.${color_reset}"
 
@@ -262,7 +264,7 @@ echo -e "${color_green}Done setting up services.${color_reset}"
 
 echo -e "${color_yellow}Setting up GRUB...${color_reset}"
 arch-chroot /mnt sed -i 's/GRUB_TIMEOUT=5/GRUB_TIMEOUT=0/g' /etc/default/grub
-arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/efi --bootloader-id=$host --removable
+arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=$host --removable
 arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
 echo -e "${color_green}Done setting up GRUB.${color_reset}"
 
