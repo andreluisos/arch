@@ -16,7 +16,8 @@ kb_layout=""
 kernel=""
 storage_device=""
 
-read -p "$(echo -e "${color_blue}Enter keyboard layout: ${color_reset}")" kb_layout
+
+# read -p "$(echo -e "${color_blue}Enter keyboard layout: ${color_reset}")" kb_layout
 echo -e "${color_yellow}Loading keyboard layout...${color_reset}"
 loadkeys br-abnt2
 echo -e "${color_green}Done loading keyboard layout.${color_reset}"
@@ -64,64 +65,102 @@ reflector --country Brazil --age 24 --protocol https,http --sort rate --save /et
 echo -e "${color_green}Done setting up mirrors.${color_reset}"
 
 echo -e "${color_yellow}Installing core packages...${color_reset}"
-pacstrap /mnt base base-devel \
-"${kernel}" "${kernel}-headers" linux-firmware \
-util-linux \
-intel-ucode \
-btrfs-progs \
-nano sudo \
-man-db man-pages \
-openssh \
-reflector \
-fuse \
-networkmanager wireless_tools wpa_supplicant \
-packagekit \
-grub \
-efibootmgr \
-lvm2 \
-parted \
-iptables \
-ebtables \
-bash-completion \
-curl wget git \
-podman rclone ffmpeg \
-pacman-contrib \
---noconfirm
-if [[ "$pschose" == "server" ]]
+core_packages=(
+    "base
+    base-devel
+    ${kernel}
+    ${kernel}-headers
+    linux-firmware
+    util-linux
+    intel-ucode
+    btrfs-progs
+    nano
+    sudo
+    man-db
+    man-pages
+    openssh
+    reflector
+    fuse
+    networkmanager
+    wireless_tools
+    wpa_supplicant
+    packagekit
+    grub
+    efibootmgr
+    lvm2
+    parted
+    iptables
+    ebtables
+    bash-completion
+    curl
+    wget
+    git
+    podman
+    rclone
+    ffmpeg
+    pacman-contrib"
+)
+
+server_packages=(
+    "python3
+    python-pip
+    moreutils
+    jq
+    unrar
+    unzip"
+)
+
+personal_packages=(
+    "mesa
+    vulkan-icd-loader
+    vulkan-intel
+    intel-media-driver
+    alsa-{utils,plugins,firmware}
+    pulseaudio pulseaudio-{equalizer,alsa}
+    xorg
+    dosfstools
+    os-prober
+    mtools
+    system-config-printer
+    cups
+    cups-pdf
+    qemu
+    virt-manager
+    virt-viewer
+    bridge-utils
+    gnome
+    gnome-software-packagekit-plugin
+    chromium
+    gnome-tweak-tool
+    gnome-usage"
+)
+
+
+if [[ "$pschose" == "server" ]];
 then
-  pacstrap /mnt python3 python-pip moreutils jq \
-  unrar unzip \
-  --noconfirm
-  arch-chroot /mnt pip install wheel
-  arch-chroot /mnt pip install glances
-fi
-if [[ "$pschose" == "personal" ]]
+    packages=("${core_packages} ${server_packages}")
+    inner_packages=("wheel glances")
+elif [[ "$pschose" == "personal" ]]
 then
-  pacstrap /mnt mesa \
-    vulkan-icd-loader \
-    vulkan-intel \
-    intel-media-driver \
-    alsa-{utils,plugins,firmware} \
-    pulseaudio pulseaudio-{equalizer,alsa} \
-    xorg \
-    dosfstools \
-    os-prober \
-    mtools \
-    system-config-printer \
-    cups \
-    cups-pdf \
-    qemu \
-    virt-manager \
-    virt-viewer \
-    bridge-utils \
-    gnome \
-    gnome-software-packagekit-plugin \
-    chromium \
-    gnome-tweak-tool \
-    gnome-usage \
-    --noconfirm
-  arch-chroot /mnt pacman -Rs gnome-weather epiphany totem --noconfirm
+    packages=("${core_packages} ${personal_packages}")
+    inner_packages=("gnome-weather epiphany totem")
 fi
+
+for package in ${packages}
+do
+    pacstrap /mnt ${package} --noconfirm
+done
+
+for package in ${inner_packages}
+do
+    if [[ "$pschose" == "server" ]]
+    then
+        arch-chroot /mnt ${package}
+    elif [[ "$pschose" == "personal" ]]
+    then
+        arch-chroot /mnt pacman -Rs ${package} --noconfirm
+    fi
+done
 echo -e "${color_green}Done installing core packages.${color_reset}"
 
 echo -e "${color_yellow}Setting up swapfile...${color_reset}"
@@ -221,24 +260,12 @@ then
 fi
 echo -e "${color_green}Done setting up services.${color_reset}"
 
-
-cat > /mnt/install.sh << EOF
-#!/bin/bash
-
-# Color preset variables
-color_reset='\033[0m'
-color_red='\033[1;31m'
-color_green='\033[1;32m'
-color_yellow='\033[1;33m'
-color_blue='\033[1;34m'
-
 echo -e "${color_yellow}Setting up GRUB...${color_reset}"
-sed -i 's/GRUB_TIMEOUT=5/GRUB_TIMEOUT=0/g' /etc/default/grub
-grub-install --target=x86_64-efi --efi-directory=/efi --bootloader-id=$host --removable
-grub-mkconfig -o /boot/grub/grub.cfg
+arch-chroot /mnt sed -i 's/GRUB_TIMEOUT=5/GRUB_TIMEOUT=0/g' /etc/default/grub
+arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/efi --bootloader-id=$host --removable
+arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
 echo -e "${color_green}Done setting up GRUB.${color_reset}"
+
+echo -e "${color_yellow}Removing script file...${color_reset}"
 rm $0
-EOF
-chmod +x /mnt/install.sh
-rm $0
-echo -e "${color_red}Remove usb before proceeding...${color_reset}"
+echo -e "${color_green}Done removing script file.${color_reset}"
