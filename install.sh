@@ -55,7 +55,7 @@ btrfs subvolume create /mnt/@snapshots
 umount /mnt
 mount -o noatime,compress=lzo,space_cache,subvol=@ "${storage_device_partition_root}" /mnt
 mkdir -p /mnt/{boot/efi,home,var,.snapshots}
-mount -o noatime,compress=lzo,space_cache,subvol=@home "${storage_device_partition_root}" $ /mnt/home
+mount -o noatime,compress=lzo,space_cache,subvol=@home "${storage_device_partition_root}" /mnt/home
 mount -o noatime,compress=lzo,space_cache,subvol=@var "${storage_device_partition_root}" /mnt/var
 mount -o noatime,compress=lzo,space_cache,subvol=@snapshots "${storage_device_partition_root}" /mnt/.snapshots
 mount "${storage_device_partition_efi}" /mnt/boot/efi
