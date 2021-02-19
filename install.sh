@@ -90,7 +90,6 @@ core_packages=(
     packagekit
     grub
     efibootmgr
-    lvm2
     parted
     iptables
     ebtables
@@ -101,7 +100,11 @@ core_packages=(
     podman
     rclone
     ffmpeg
-    pacman-contrib"
+    pacman-contrib
+    vde2
+    dnsmasq
+    bridge-utils
+    openbsd-netcat"
 )
 
 server_packages=(
