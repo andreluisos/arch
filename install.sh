@@ -225,7 +225,6 @@ EOF
 echo -e "${color_green}Done setting up numlock on tty...${color_reset}"
 
 echo -e "${color_yellow}mkinitcpio set up...${color_reset}"
-sed -i 's/block filesystems/block lvm2 filesystems/g' /mnt/etc/mkinitcpio.conf
 arch-chroot /mnt mkinitcpio -p $kernel
 echo -e "${color_green}Done mkinitcpio.${color_reset}"
 
